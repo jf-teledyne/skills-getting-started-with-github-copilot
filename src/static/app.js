@@ -4,6 +4,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  function renderParticipants(container, activityName, participants) {
+    if (!participants.length) {
+      const noParticipants = document.createElement("p");
+      noParticipants.className = "no-participants";
+      noParticipants.textContent = "No participants yet";
+      container.appendChild(noParticipants);
+      return;
+    }
+
+    const participantList = document.createElement("ul");
+
+    participants.forEach((email) => {
+      const participantItem = document.createElement("li");
+      const participantEmail = document.createElement("span");
+      const removeButton = document.createElement("button");
+
+      participantEmail.textContent = email;
+
+      removeButton.type = "button";
+      removeButton.className = "remove-participant";
+      removeButton.dataset.activity = encodeURIComponent(activityName);
+      removeButton.dataset.email = encodeURIComponent(email);
+      removeButton.setAttribute("aria-label", `Remove ${email} from ${activityName}`);
+      removeButton.title = "Remove participant";
+      removeButton.textContent = "×";
+
+      participantItem.appendChild(participantEmail);
+      participantItem.appendChild(removeButton);
+      participantList.appendChild(participantItem);
+    });
+
+    container.appendChild(participantList);
+  }
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -28,19 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants">
             <strong>Participants:</strong>
-            ${details.participants.length
-              ? `<ul>${details.participants.map((email) => `
-                  <li>
-                    <span>${email}</span>
-                    <button type="button" class="remove-participant"
-                      data-activity="${encodeURIComponent(name)}"
-                      data-email="${encodeURIComponent(email)}"
-                      aria-label="Remove ${email} from ${name}"
-                      title="Remove participant">&times;</button>
-                  </li>`).join("")}</ul>`
-              : "<p class=\"no-participants\">No participants yet</p>"}
           </div>
         `;
+
+        renderParticipants(
+          activityCard.querySelector(".participants"),
+          name,
+          details.participants
+        );
 
         activitiesList.appendChild(activityCard);
 
